@@ -20,6 +20,12 @@ See [logs-analysis-project.py](logs-analysis-project.py) for more details.
 
 Keep in mind that if file wasn't executed on root `/` use `vagrant/logs-analysis-project`
 
+
+## View Creation Statement
+create or replace view article_counting as select 
+                     path, count(*) as count from log group by path
+                     order by count desc limit 3 offset 1;
+					
 ## Running
 
 * Make sure you have `newsdata.sql`, the SQL script file with all the data. It can be downloaded from the Udacity course page.
