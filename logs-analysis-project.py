@@ -5,18 +5,22 @@ import psycopg2
 DATABASE_NAME = "news"
 
 # What are the most popular three articles of all time?
+
+
 def top3_articles():
+
     print ("What are the most popular three articles of all time?")
+
     output = [('Path', 'Count')]
     db = psycopg2.connect(dbname=DATABASE_NAME)
     cur = db.cursor()
     # Query
     cur.execute("create or replace view article_counting as select" +
-                    " path, count(*) as count from log group by path" +
-                    " order by count desc limit 3 offset 1;")
+                " path, count(*) as count from log group by path" +
+                " order by count desc limit 3 offset 1;")
     cur.execute("select a.title, c.count from articles a inner join" +
-                    " article_counting c on '/article/' || a.slug =" +
-                    " c.path order by c.count desc")
+                " article_counting c on '/article/' || a.slug =" +
+                " c.path order by c.count desc")
     output += cur.fetchall()
     db.close()
 
@@ -32,9 +36,9 @@ def top5_articles_writers():
     cur = db.cursor()
     # Using join between tables to uses the stats from log table
     cur.execute("select au.name, count(au.name) as count from authors au" +
-                    " inner join articles a on au.id = a.author inner join" +
-                    " log l on '/article/' || a.slug = l.path group by" +
-                    " au.name order by count desc limit 5;")
+                " inner join articles a on au.id = a.author inner join" +
+                " log l on '/article/' || a.slug = l.path group by" +
+                " au.name order by count desc limit 5;")
     output += cur.fetchall()
     db.close()
 
@@ -51,17 +55,19 @@ def get_error_stats_by_day():
     cur = db.cursor()
     # Creating a view to break the query
     cur.execute("create or replace view error as select date(time)," +
-                    " count(*) as count from log where status =" +
-                    " '404 NOT FOUND' group by date(time) order by" +
-                    " count desc;")
+                " count(*) as count from log where status =" +
+                " '404 NOT FOUND' group by date(time) order by" +
+                " count desc;")
     cur.execute("create or replace view successful as select date(time)," +
-                    " count(*) as count from log where status ='200 OK' " +
-                    "  group by date(time) order by count desc;")
+                " count(*) as count from log where status ='200 OK' " +
+                "  group by date(time) order by count desc;")
     # Query to calculate the percentage
     cur.execute("select e.date, round( (100 * cast(e.count as decimal) /" +
-                    " cast(s.count as decimal)),2) as percentage from " +
-                    " error e inner join successful s on e.date = s.date " +
-                    " order by e.count desc;")
+                " cast(s.count as decimal)),2) as percentage from " +
+                " error e inner join successful s on e.date = s.date " +
+                " WHERE round( (100 * cast(e.count as decimal) /" +
+                " cast(s.count as decimal)),2)>1 " +
+                " order by e.count desc;")
     output += cur.fetchall()
     db.close()
 
